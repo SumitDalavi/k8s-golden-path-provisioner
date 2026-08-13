@@ -56,6 +56,101 @@ Many teams try to solve this with Helm charts or raw Terraform. While those work
 └── README.md
 ```
 
+
+## ðŸ“‹ Prerequisites
+
+| Tool | Version | Purpose |
+|------|---------|---------|
+| [Go](https://go.dev/) | >= 1.21 | Build the operator |
+| [kubectl](https://kubernetes.io/docs/tasks/tools/) | >= 1.28 | Kubernetes CLI |
+| [kind](https://kind.sigs.k8s.io/) or [minikube](https://minikube.sigs.k8s.io/) | Latest | Local K8s cluster |
+| [Docker](https://www.docker.com/) | >= 24.x | Container runtime |
+
+## ðŸš€ Step-by-Step Setup
+
+### Option A: Local Cluster (kind)
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/SumitDalavi/k8s-golden-path-provisioner.git
+cd k8s-golden-path-provisioner
+
+# 2. Create a local cluster
+kind create cluster --name golden-path
+
+# 3. Apply the CRD (Custom Resource Definition)
+kubectl apply -f api/v1alpha1/
+
+# 4. Build and run the controller locally
+go run . &
+
+# 5. Create a PlatformService resource to trigger provisioning
+cat <<EOF | kubectl apply -f -
+apiVersion: platform.example.com/v1alpha1
+kind: PlatformService
+metadata:
+  name: my-microservice
+spec:
+  team: payments
+  language: nodejs
+  replicas: 3
+  monitoring: true
+EOF
+```
+
+### Option B: Build as container and deploy to cluster
+
+```bash
+# Build operator image
+docker build -t golden-path-operator:latest .
+kind load docker-image golden-path-operator:latest --name golden-path
+
+# Deploy to cluster
+kubectl apply -f deploy/  # (if deployment manifests exist)
+```
+
+## ðŸ§ª Usage & Demo
+
+### Step 1: Watch the controller create resources
+```bash
+kubectl get platformservices
+kubectl get deployments,services,configmaps -l managed-by=golden-path
+```
+
+### Step 2: Create another service via Golden Path
+```bash
+cat <<EOF | kubectl apply -f -
+apiVersion: platform.example.com/v1alpha1
+kind: PlatformService
+metadata:
+  name: user-service
+spec:
+  team: identity
+  language: python
+  replicas: 2
+  monitoring: true
+EOF
+```
+
+### Step 3: Observe the generated resources
+```bash
+kubectl get all -l managed-by=golden-path
+```
+
+## âœ… Verification
+
+| Check | Command | Expected |
+|-------|---------|----------|
+| CRD registered | `kubectl get crds \| grep platformservice` | CRD present |
+| CR created | `kubectl get platformservices` | Resources listed |
+| Resources provisioned | `kubectl get deploy,svc` | Auto-created resources |
+| Controller logs | Check controller stdout | Reconciliation messages |
+
+```bash
+# Cleanup
+kind delete cluster --name golden-path
+```
+
 ## 👨‍💻 Author
 
 *Built to demonstrate Platform Engineering abstractions and Kubernetes API extension.*
