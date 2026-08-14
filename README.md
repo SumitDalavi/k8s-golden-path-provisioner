@@ -57,7 +57,7 @@ Many teams try to solve this with Helm charts or raw Terraform. While those work
 ```
 
 
-## ðŸ“‹ Prerequisites
+## 📋 Prerequisites
 
 | Tool | Version | Purpose |
 |------|---------|---------|
@@ -66,7 +66,7 @@ Many teams try to solve this with Helm charts or raw Terraform. While those work
 | [kind](https://kind.sigs.k8s.io/) or [minikube](https://minikube.sigs.k8s.io/) | Latest | Local K8s cluster |
 | [Docker](https://www.docker.com/) | >= 24.x | Container runtime |
 
-## ðŸš€ Step-by-Step Setup
+## 🚀 Step-by-Step Setup
 
 ### Option A: Local Cluster (kind)
 
@@ -109,7 +109,7 @@ kind load docker-image golden-path-operator:latest --name golden-path
 kubectl apply -f deploy/  # (if deployment manifests exist)
 ```
 
-## ðŸ§ª Usage & Demo
+## 🧪 Usage & Demo
 
 ### Step 1: Watch the controller create resources
 ```bash
@@ -137,7 +137,7 @@ EOF
 kubectl get all -l managed-by=golden-path
 ```
 
-## âœ… Verification
+## ✅ Verification
 
 | Check | Command | Expected |
 |-------|---------|----------|
@@ -153,4 +153,9 @@ kind delete cluster --name golden-path
 
 ## 👨‍💻 Author
 
-*Built to demonstrate Platform Engineering abstractions and Kubernetes API extension.*
+**Sumit Dalavi** — Senior DevSecOps / Platform Engineer
+[GitHub](https://github.com/SumitDalavi) | [LinkedIn](https://in.linkedin.com/in/sumit-dalavi-762838129)
+
+---
+
+*Built with a focus on production-grade patterns, not toy demos.*
