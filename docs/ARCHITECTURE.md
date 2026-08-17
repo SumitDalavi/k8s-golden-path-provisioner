@@ -1,5 +1,17 @@
 # Architecture: Kubernetes "Golden Path" Provisioner
 
+## System Diagram
+The following Mermaid.js sequence diagram maps the core workflow and interactions:
+
+```mermaid
+sequenceDiagram
+    Dev->>K8s: Apply NamespaceRequest
+Operator->>K8s: Create Namespace
+Operator->>K8s: Create RBAC
+Operator->>K8s: Create NetworkPolicy
+```
+
+
 ## The Abstraction Gap
 Platform engineering is about providing abstractions. A developer should not need to know the intricacies of Kubernetes RBAC, LimitRanges, or NetworkPolicies just to deploy a standard backend API. 
 
