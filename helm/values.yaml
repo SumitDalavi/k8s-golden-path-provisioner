@@ -1,0 +1,15 @@
+replicaCount: 1
+image:
+  repository: ghcr.io/sumitdalavi/k8s-golden-path-provisioner
+  tag: latest
+  pullPolicy: IfNotPresent
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+webhook:
+  enabled: true
+  certManagerEnabled: true

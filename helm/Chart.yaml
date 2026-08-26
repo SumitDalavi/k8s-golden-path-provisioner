@@ -1,0 +1,9 @@
+apiVersion: v2
+name: k8s-golden-path-provisioner
+description: Kubernetes operator that provisions standardised Platform Services
+type: application
+version: 0.1.0
+appVersion: "latest"
+keywords: [kubernetes, operator, platform-engineering]
+maintainers:
+  - name: Sumit Dalavi
