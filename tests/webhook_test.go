@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/SumitDalavi/k8s-golden-path-provisioner/webhook"
 	platformv1 "github.com/SumitDalavi/k8s-golden-path-provisioner/api/v1alpha1"
+	"github.com/SumitDalavi/k8s-golden-path-provisioner/webhook"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -22,8 +22,12 @@ func TestDefaulter_SetsDefaults(t *testing.T) {
 	if err := d.Default(context.Background(), ps); err != nil {
 		t.Fatal(err)
 	}
-	if ps.Spec.Tier != "backend" { t.Errorf("expected tier=backend, got %s", ps.Spec.Tier) }
-	if ps.Spec.Team != "default-team" { t.Errorf("expected team=default-team, got %s", ps.Spec.Team) }
+	if ps.Spec.Tier != "backend" {
+		t.Errorf("expected tier=backend, got %s", ps.Spec.Tier)
+	}
+	if ps.Spec.Team != "default-team" {
+		t.Errorf("expected team=default-team, got %s", ps.Spec.Team)
+	}
 	if ps.Labels["app.kubernetes.io/managed-by"] != "golden-path-provisioner" {
 		t.Error("missing managed-by label")
 	}

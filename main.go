@@ -35,9 +35,9 @@ func main() {
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:             scheme,
-		LeaderElection:     enableLeaderElection,
-		LeaderElectionID:   "golden-path-provisioner.example.com",
+		Scheme:           scheme,
+		LeaderElection:   enableLeaderElection,
+		LeaderElectionID: "golden-path-provisioner.example.com",
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")

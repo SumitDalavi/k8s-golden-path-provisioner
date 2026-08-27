@@ -18,7 +18,7 @@ func (d *PlatformServiceDefaulter) Default(ctx context.Context, obj client.Objec
 		return fmt.Errorf("expected PlatformService, got %T", obj)
 	}
 	if ps.Spec.Tier == "" {
-		ps.Spec.Tier = "backend" 
+		ps.Spec.Tier = "backend"
 	}
 	if ps.Spec.Team == "" {
 		ps.Spec.Team = "default-team"
