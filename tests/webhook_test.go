@@ -9,54 +9,46 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func newPS(replicas int, port int32, image string) *platformv1.PlatformService {
+func newPS(team, tier string) *platformv1.PlatformService {
 	return &platformv1.PlatformService{
 		ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: "default"},
-		Spec:       platformv1.PlatformServiceSpec{Replicas: replicas, Port: port, Image: image},
+		Spec:       platformv1.PlatformServiceSpec{Team: team, Tier: tier},
 	}
 }
 
-func TestDefaulter_SetsReplicaDefault(t *testing.T) {
+func TestDefaulter_SetsDefaults(t *testing.T) {
 	d := &webhook.PlatformServiceDefaulter{}
-	ps := newPS(0, 0, "")
+	ps := newPS("", "")
 	if err := d.Default(context.Background(), ps); err != nil {
 		t.Fatal(err)
 	}
-	if ps.Spec.Replicas != 2 { t.Errorf("expected replicas=2, got %d", ps.Spec.Replicas) }
-	if ps.Spec.Port != 8080 { t.Errorf("expected port=8080, got %d", ps.Spec.Port) }
+	if ps.Spec.Tier != "backend" { t.Errorf("expected tier=backend, got %s", ps.Spec.Tier) }
+	if ps.Spec.Team != "default-team" { t.Errorf("expected team=default-team, got %s", ps.Spec.Team) }
 	if ps.Labels["app.kubernetes.io/managed-by"] != "golden-path-provisioner" {
 		t.Error("missing managed-by label")
 	}
 }
 
-func TestValidator_RejectsZeroReplicas(t *testing.T) {
+func TestValidator_RejectsEmptyTeam(t *testing.T) {
 	v := &webhook.PlatformServiceValidator{}
-	ps := newPS(0, 8080, "nginx:1.25")
+	ps := newPS("", "frontend")
 	if err := v.ValidateCreate(context.Background(), ps); err == nil {
-		t.Error("expected validation error for 0 replicas")
+		t.Error("expected validation error for empty team")
 	}
 }
 
-func TestValidator_RejectsTooManyReplicas(t *testing.T) {
+func TestValidator_RejectsInvalidTier(t *testing.T) {
 	v := &webhook.PlatformServiceValidator{}
-	ps := newPS(100, 8080, "nginx:1.25")
+	ps := newPS("test-team", "invalid-tier")
 	if err := v.ValidateCreate(context.Background(), ps); err == nil {
-		t.Error("expected validation error for 100 replicas")
+		t.Error("expected validation error for invalid tier")
 	}
 }
 
 func TestValidator_AcceptsValidSpec(t *testing.T) {
 	v := &webhook.PlatformServiceValidator{}
-	ps := newPS(3, 9090, "myapp:v1")
+	ps := newPS("test-team", "frontend")
 	if err := v.ValidateCreate(context.Background(), ps); err != nil {
 		t.Errorf("unexpected validation error: %v", err)
-	}
-}
-
-func TestValidator_RejectsEmptyImage(t *testing.T) {
-	v := &webhook.PlatformServiceValidator{}
-	ps := newPS(2, 8080, "")
-	if err := v.ValidateCreate(context.Background(), ps); err == nil {
-		t.Error("expected validation error for empty image")
 	}
 }

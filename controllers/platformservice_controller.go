@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	platformv1alpha1 "github.com/example/k8s-golden-path-provisioner/api/v1alpha1"
+	platformv1alpha1 "github.com/SumitDalavi/k8s-golden-path-provisioner/api/v1alpha1"
 )
 
 type PlatformServiceReconciler struct {

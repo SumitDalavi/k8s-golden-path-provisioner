@@ -2,13 +2,10 @@ package webhook
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"net/http"
 
 	platformv1 "github.com/SumitDalavi/k8s-golden-path-provisioner/api/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // PlatformServiceDefaulter implements the admission.CustomDefaulter interface.
@@ -20,14 +17,11 @@ func (d *PlatformServiceDefaulter) Default(ctx context.Context, obj client.Objec
 	if !ok {
 		return fmt.Errorf("expected PlatformService, got %T", obj)
 	}
-	if ps.Spec.Replicas == 0 {
-		ps.Spec.Replicas = 2 // default to 2 replicas for HA
+	if ps.Spec.Tier == "" {
+		ps.Spec.Tier = "backend" 
 	}
-	if ps.Spec.Port == 0 {
-		ps.Spec.Port = 8080
-	}
-	if ps.Spec.Image == "" {
-		ps.Spec.Image = "nginx:1.25-alpine"
+	if ps.Spec.Team == "" {
+		ps.Spec.Team = "default-team"
 	}
 	if ps.Labels == nil {
 		ps.Labels = make(map[string]string)
@@ -57,17 +51,11 @@ func (v *PlatformServiceValidator) validate(obj client.Object) error {
 	if !ok {
 		return fmt.Errorf("expected PlatformService, got %T", obj)
 	}
-	if ps.Spec.Replicas > 20 {
-		return fmt.Errorf("replicas must be <= 20, got %d", ps.Spec.Replicas)
+	if ps.Spec.Tier != "frontend" && ps.Spec.Tier != "backend" && ps.Spec.Tier != "worker" {
+		return fmt.Errorf("tier must be frontend, backend, or worker")
 	}
-	if ps.Spec.Replicas < 1 {
-		return fmt.Errorf("replicas must be >= 1")
-	}
-	if ps.Spec.Port < 1 || ps.Spec.Port > 65535 {
-		return fmt.Errorf("port must be 1-65535, got %d", ps.Spec.Port)
-	}
-	if ps.Spec.Image == "" {
-		return fmt.Errorf("image must be specified")
+	if ps.Spec.Team == "" {
+		return fmt.Errorf("team must be specified")
 	}
 	return nil
 }
