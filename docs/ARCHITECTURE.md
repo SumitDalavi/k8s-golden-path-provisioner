@@ -1,16 +1,48 @@
-# Architecture: Kubernetes "Golden Path" Provisioner
+# Architecture — k8s-golden-path-provisioner
+> Last updated: 2026-08-29 | Maturity: Full Prototype
+> _Kubernetes operator for automated namespace and RBAC provisioning._
 
 ## System Diagram
 The following Mermaid.js sequence diagram maps the core workflow and interactions:
 
 ```mermaid
-sequenceDiagram
-    Dev->>K8s: Apply NamespaceRequest
-Operator->>K8s: Create Namespace
-Operator->>K8s: Create RBAC
-Operator->>K8s: Create NetworkPolicy
+flowchart TD
+    Dev(["Developer"])
+    API["kube-apiserver"]
+    Operator["k8s-golden-path-provisioner"]
+    NS["Namespace"]
+    RBAC["RoleBinding"]
+    NP["NetworkPolicy"]
+    Quota["ResourceQuota"]
+
+    Dev -->|"kubectl apply PlatformService"| API
+    API -->|"Watch Event"| Operator
+    Operator -->|"Reconcile (Create)"| NS
+    Operator -->|"Reconcile (Create)"| RBAC
+    Operator -->|"Reconcile (Create)"| NP
+    Operator -->|"Reconcile (Create)"| Quota
 ```
 
+## Component Table
+
+| Component | File | Responsibility | Tech |
+|---|---|---|---|
+| PlatformService CRD | `api/v1alpha1/platformservice_types.go` | Defines the API schema for developers | Go |
+| Controller | `controllers/platformservice_controller.go` | Main reconciliation loop enforcing state | Go |
+
+## Port Assignments
+
+| Service | Port | Notes |
+|---|---|---|
+| Metrics | `8080` | Prometheus metrics endpoint exposed by controller-runtime |
+| Healthz | `8081` | Liveness and readiness probes |
+
+## Dependency Honesty Table
+
+| Dependency | Status | Notes |
+|---|---|---|
+| Kubernetes API Server | **Real** | Controller directly talks to the K8s API to manage resources. |
+| kind (Local Cluster) | **Optional** | Used for E2E tests and local development. |
 
 ## The Abstraction Gap
 Platform engineering is about providing abstractions. A developer should not need to know the intricacies of Kubernetes RBAC, LimitRanges, or NetworkPolicies just to deploy a standard backend API. 

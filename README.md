@@ -1,5 +1,8 @@
 # Self-Service Kubernetes "Golden Path" Operator 🌟🛣️
 
+> **Maturity:** Full Prototype
+> _End-to-end Kubernetes operator demonstrating automated namespace and RBAC provisioning._
+
 > A custom Kubernetes Operator that provisions compliant, production-ready environments (Namespaces, RBAC, NetworkPolicies, ResourceQuotas) from a single Developer CRD.
 
 ## The Problem
@@ -52,9 +55,25 @@ Many teams try to solve this with Helm charts or raw Terraform. While those work
 │   └── platformservice_types.go       # CRD definition
 ├── controllers/
 │   └── platformservice_controller.go  # Reconciliation logic
-├── docs/ARCHITECTURE.md
+├── docs/
 └── README.md
 ```
+
+## Mock Boundaries (Honest Scope)
+
+| What | Status | Details |
+|---|---|---|
+| Kubernetes API | **Real** | Directly reconciles native K8s resources against API Server. |
+| Namespace Creation | **Real** | Provisions real namespaces and applies RBAC `RoleBindings`. |
+| kind Cluster | **Optional** | Tested on `kind` cluster locally, can deploy to any K8s cluster. |
+
+## 📚 Documentation
+
+- [Architecture](docs/ARCHITECTURE.md) — System diagram and component details
+- [Runbook](docs/runbook.md) — Setup, commands, and expected outputs
+- [Decisions](docs/decisions.md) — ADRs for operator pattern choices
+- [Changelog](docs/changelog.md) — Change history
+
 
 
 ## 📋 Prerequisites
