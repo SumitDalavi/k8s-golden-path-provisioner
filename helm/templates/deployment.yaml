@@ -23,19 +23,8 @@ spec:
           command: ["/manager"]
           args:
             - --enable-leader-election
-            - --health-probe-bind-address=:8081
           ports:
             - containerPort: 9443
               name: webhook-server
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          livenessProbe:
-            httpGet:
-              path: /healthz
-              port: 8081
-            initialDelaySeconds: 15
-          readinessProbe:
-            httpGet:
-              path: /readyz
-              port: 8081
-            initialDelaySeconds: 5
