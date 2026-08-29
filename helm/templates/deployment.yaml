@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "k8s-golden-path-provisioner.fullname" . }}-controller
+  name: golden-path-controller
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "k8s-golden-path-provisioner.labels" . | nindent 4 }}
+    app: golden-path
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "k8s-golden-path-provisioner.fullname" . }}
+      app: golden-path
   template:
     metadata:
       labels:
-        app: {{ include "k8s-golden-path-provisioner.fullname" . }}
+        app: golden-path
     spec:
-      serviceAccountName: {{ include "k8s-golden-path-provisioner.fullname" . }}
+      serviceAccountName: golden-path
       containers:
         - name: manager
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
