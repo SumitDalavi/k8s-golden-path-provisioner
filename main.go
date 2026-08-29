@@ -10,6 +10,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"github.com/SumitDalavi/k8s-golden-path-provisioner/controllers"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -45,6 +46,14 @@ func main() {
 	}
 
 	// +kubebuilder:scaffold:builder
+	
+	if err = (&controllers.PlatformServiceReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "PlatformService")
+		os.Exit(1)
+	}
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
