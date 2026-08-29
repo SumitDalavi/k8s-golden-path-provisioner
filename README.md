@@ -1,5 +1,7 @@
 # Self-Service Kubernetes "Golden Path" Operator 🌟🛣️
 
+[![CI Pipeline](https://github.com/SumitDalavi/k8s-golden-path-provisioner/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/SumitDalavi/k8s-golden-path-provisioner/actions/workflows/ci.yml)
+
 > **Maturity:** Full Prototype
 > _End-to-end Kubernetes operator demonstrating automated namespace and RBAC provisioning._
 
