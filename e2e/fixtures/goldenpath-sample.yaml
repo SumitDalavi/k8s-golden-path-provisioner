@@ -1,0 +1,9 @@
+apiVersion: platform.example.com/v1alpha1
+kind: PlatformService
+metadata:
+  name: sample
+  namespace: default
+spec:
+  team: QA
+  tier: backend
+  exposeExternally: false
