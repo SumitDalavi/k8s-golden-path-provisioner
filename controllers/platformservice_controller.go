@@ -27,9 +27,9 @@ func (r *PlatformServiceReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	var ps unstructured.Unstructured
 	ps.SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   "core.goldenpath.io",
+		Group:   "platform.example.com",
 		Version: "v1alpha1",
-		Kind:    "GoldenPath",
+		Kind:    "PlatformService",
 	})
 	
 	if err := r.Get(ctx, req.NamespacedName, &ps); err != nil {
@@ -85,9 +85,9 @@ func (r *PlatformServiceReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 func (r *PlatformServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	u := &unstructured.Unstructured{}
 	u.SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   "core.goldenpath.io",
+		Group:   "platform.example.com",
 		Version: "v1alpha1",
-		Kind:    "GoldenPath",
+		Kind:    "PlatformService",
 	})
 	return ctrl.NewControllerManagedBy(mgr).
 		For(u).

@@ -9,7 +9,7 @@ kind: ClusterRole
 metadata:
   name: golden-path-manager
 rules:
-- apiGroups: ["core.goldenpath.io"]
+- apiGroups: ["platform.example.com"]
   resources: ["goldenpaths", "goldenpaths/status", "goldenpaths/finalizers"]
   verbs: ["get", "list", "watch", "update", "patch", "status"]
 - apiGroups: [""]
