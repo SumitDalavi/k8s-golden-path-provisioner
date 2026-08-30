@@ -13,3 +13,9 @@
 - Corrected `--leader-elect` flag to `--enable-leader-election` to prevent `CrashLoopBackOff`.
 - Removed undefined health probes (`/healthz` and `/readyz`) from deployment to resolve restart loops.
 - Rewrote Go controller logic in `main.go` and `platformservice_controller.go` to use `unstructured.Unstructured` to dynamically watch `GoldenPath` CRD and execute namespace and RBAC reconciliation.
+
+### Post-Release Hotfixes
+- Resolved lingering CI/CD failures introduced during portfolio elevation.
+- Fixed Docker build and permission errors across client/server components.
+- Corrected Kubernetes controller GroupVersionKind mismatches and E2E Vault addressing.
+- Repaired broken property-based test configurations.
