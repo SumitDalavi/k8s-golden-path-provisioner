@@ -23,8 +23,8 @@ sleep 10
 
 # Assert: resources were provisioned
 log "Asserting resources..."
-kubectl get namespace sample || { log "❌ Namespace 'sample' not created"; kill $PID; exit 1; }
-kubectl get serviceaccount -n sample default || { log "❌ SA not created"; kill $PID; exit 1; }
+kubectl get namespace sample-prod || { log "❌ Namespace 'sample-prod' not created"; kill $PID; exit 1; }
+kubectl get serviceaccount -n sample-prod default || { log "❌ SA not created"; kill $PID; exit 1; }
 
 log "✅ Provisioner reconciled GoldenPath CR successfully"
 kill $PID
