@@ -20,19 +20,20 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.21"
+          go-version: "1.26"
 
       - name: Run tests
         run: go test ./...
 
       - name: Build operator image
         run: |
-          IMAGE=ghcr.io/${{ github.repository_owner }}/k8s-golden-path-provisioner:${{ github.ref_name }}
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE="ghcr.io/${OWNER}/k8s-golden-path-provisioner:${{ github.ref_name }}"
           docker build -t "$IMAGE" .
           echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
 
       - name: Scan image with Trivy
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.28.0
         with:
           image-ref: ${{ env.IMAGE }}
           format: table
@@ -43,7 +44,7 @@ jobs:
         uses: anchore/sbom-action@v0
         with:
           format: spdx-json
-          artifact-name: sbom.spdx.json
+          output-file: sbom.spdx.json
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
