@@ -1,28 +1,24 @@
-# Self-Service Kubernetes "Golden Path" Operator 🌟🛣️
+# Self-Service Kubernetes "Golden Path" Operator
 
 [![CI Pipeline](https://github.com/SumitDalavi/k8s-golden-path-provisioner/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/SumitDalavi/k8s-golden-path-provisioner/actions/workflows/ci.yml)
 
-> **Maturity:** Full Prototype
-> _End-to-end Kubernetes operator demonstrating automated namespace and RBAC provisioning._
+> **Maturity:** Full Prototype  
+> A Kubernetes operator that provisions a baseline namespace, RBAC binding, and resource quota from a `PlatformService` CRD.
 
-> A custom Kubernetes Operator that provisions compliant, production-ready environments (Namespaces, RBAC, NetworkPolicies, ResourceQuotas) from a single Developer CRD.
+## The problem
 
-## The Problem
+Creating a new service environment usually requires several Kubernetes resources: a namespace, RBAC for deployment access, and guardrails to prevent noisy neighbours. Doing this manually is repetitive and easy to get wrong.
 
-When developers need to deploy a new service, they usually need a namespace, service accounts, network policies (to restrict blast radius), resource limits, and secrets access. Creating all of these YAML files manually is tedious, error-prone, and violates Platform Engineering principles of self-service.
+## The solution
 
-## The Solution
+`PlatformService` is a custom resource that declares the service name, owning team, and tier. The operator reconciles it into a baseline environment:
 
-This project implements a Custom Resource Definition (CRD) called `PlatformService`. A developer submits one simple YAML file declaring their service's name and tier (e.g., `tier: backend`). 
-
-The Operator automatically reconciles this into a "Golden Path" environment:
-1. Provisions a dedicated **Namespace**
-2. Applies default **NetworkPolicies** (e.g., deny-all ingress by default)
-3. Configures **ResourceQuotas** and **LimitRanges** to prevent noisy neighbors
-4. Creates dedicated **ServiceAccounts** and **RoleBindings** for CI/CD deployment access
+1. Creates a dedicated namespace named `<service-name>-prod`.
+2. Creates a `cicd-deployer-binding` RoleBinding for the namespace's default ServiceAccount.
+3. Creates a `default-quota` ResourceQuota with CPU and memory limits.
 
 ```yaml
-apiVersion: platform.internal/v1alpha1
+apiVersion: platform.example.com/v1alpha1
 kind: PlatformService
 metadata:
   name: payments-api
@@ -32,157 +28,136 @@ spec:
   exposeExternally: false
 ```
 
-## Why This Over the Obvious Alternative
+## Current scope
 
-Many teams try to solve this with Helm charts or raw Terraform. While those work for *deploying* applications, they are poor abstractions for *managing cluster multi-tenancy state*. By using a Kubernetes Operator, we ensure that if someone manually deletes a NetworkPolicy, the controller instantly recreates it — enforcing compliance continuously, not just at deploy-time.
+| Capability | Status | Details |
+|---|---|---|
+| Namespace provisioning | Implemented | Creates `<name>-prod` |
+| CI/CD RBAC binding | Implemented | Binds the namespace default ServiceAccount to the `edit` ClusterRole |
+| Resource quota | Implemented | Sets CPU and memory limits |
+| NetworkPolicies | Not implemented | Planned; the current controller does not create them |
+| LimitRanges | Not implemented | Planned |
+| Dedicated ServiceAccounts | Not implemented | Planned |
+| Ingress / Gateway | Not implemented | `exposeExternally` is accepted by the CRD but is not reconciled |
+| Tier-specific policy | Not implemented | `tier` is validated but does not change reconciliation behaviour |
 
-## 🛠️ Tech Stack
+## Why an operator
 
-- **Language**: Go
-- **Framework**: kubebuilder / controller-runtime
-- **API**: Kubernetes Custom Resource Definitions (CRDs)
+Helm charts and Terraform are useful for deployment-time provisioning. An operator is useful when the desired state should be continuously reconciled: if a managed resource is deleted, the controller can recreate it on the next reconciliation.
 
-## Decision Log
+This repository demonstrates that pattern with a deliberately small, verifiable scope.
+
+## Tech stack
+
+- Go
+- Kubebuilder / controller-runtime
+- Kubernetes CRDs
+- GitHub Actions
+
+## Decision log
 
 | Decision | Rationale |
-|----------|-----------|
-| Go Operator over Helm | Helm is a one-time templating engine. An Operator runs a continuous reconciliation loop, ensuring the environment *stays* compliant even if drifted. |
-| CRD Abstraction | The `PlatformService` CRD abstracts away 100s of lines of K8s boilerplate into 5 lines of declarative developer intent. |
-| Default NetworkPolicies | Implementing a Zero-Trust network architecture is too complex to ask developers to do manually; the platform must enforce it automatically. |
+|---|---|
+| Operator over Helm | Helm is primarily a templating and release tool. An operator continuously reconciles desired state. |
+| CRD abstraction | Developers declare intent through `PlatformService`; the controller creates the supporting resources. |
+| Small initial scope | The first version focuses on namespace, RBAC, and quota provisioning so each behaviour can be verified. |
 
-## 📁 Project Structure
+## Project structure
 
+```text
+api/v1alpha1/
+  platformservice_types.go
+controllers/
+  platformservice_controller.go
+config/crd/
+  platformservice.yaml
+docs/
+README.md
 ```
-├── api/v1alpha1/
-│   └── platformservice_types.go       # CRD definition
-├── controllers/
-│   └── platformservice_controller.go  # Reconciliation logic
-├── docs/
-└── README.md
-```
 
-## Mock Boundaries (Honest Scope)
-
-| What | Status | Details |
-|---|---|---|
-| Kubernetes API | **Real** | Directly reconciles native K8s resources against API Server. |
-| Namespace Creation | **Real** | Provisions real namespaces and applies RBAC `RoleBindings`. |
-| kind Cluster | **Optional** | Tested on `kind` cluster locally, can deploy to any K8s cluster. |
-
-## 📚 Documentation
-
-- [Architecture](docs/ARCHITECTURE.md) — System diagram and component details
-- [Runbook](docs/runbook.md) — Setup, commands, and expected outputs
-- [Decisions](docs/decisions.md) — ADRs for operator pattern choices
-- [Changelog](docs/changelog.md) — Change history
-
-
-
-## 📋 Prerequisites
+## Prerequisites
 
 | Tool | Version | Purpose |
-|------|---------|---------|
-| [Go](https://go.dev/) | >= 1.21 | Build the operator |
-| [kubectl](https://kubernetes.io/docs/tasks/tools/) | >= 1.28 | Kubernetes CLI |
-| [kind](https://kind.sigs.k8s.io/) or [minikube](https://minikube.sigs.k8s.io/) | Latest | Local K8s cluster |
-| [Docker](https://www.docker.com/) | >= 24.x | Container runtime |
+|---|---|---|
+| Go | >= 1.21 | Build and run the operator |
+| kubectl | >= 1.28 | Kubernetes CLI |
+| kind or minikube | Latest | Local Kubernetes cluster |
+| Docker | >= 24.x | Container runtime |
 
-## 🚀 Step-by-Step Setup
-
-### Option A: Local Cluster (kind)
+## Run locally
 
 ```bash
-# 1. Clone the repository
 git clone https://github.com/SumitDalavi/k8s-golden-path-provisioner.git
 cd k8s-golden-path-provisioner
 
-# 2. Create a local cluster
 kind create cluster --name golden-path
+kubectl apply -f config/crd/platformservice.yaml
 
-# 3. Apply the CRD (Custom Resource Definition)
-kubectl apply -f api/v1alpha1/
-
-# 4. Build and run the controller locally
 go run . &
+```
 
-# 5. Create a PlatformService resource to trigger provisioning
+Create a `PlatformService`:
+
+```bash
 cat <<EOF | kubectl apply -f -
 apiVersion: platform.example.com/v1alpha1
 kind: PlatformService
 metadata:
-  name: my-microservice
+  name: payments-api
 spec:
-  team: payments
-  language: nodejs
-  replicas: 3
-  monitoring: true
+  team: checkout
+  tier: backend
+  exposeExternally: false
 EOF
 ```
 
-### Option B: Build as container and deploy to cluster
+## Verify
 
 ```bash
-# Build operator image
-docker build -t golden-path-operator:latest .
-kind load docker-image golden-path-operator:latest --name golden-path
+# CRD is registered
+kubectl get crds | grep platformservice
 
-# Deploy to cluster
-kubectl apply -f deploy/  # (if deployment manifests exist)
-```
-
-## 🧪 Usage & Demo
-
-### Step 1: Watch the controller create resources
-```bash
+# CR is accepted
 kubectl get platformservices
-kubectl get deployments,services,configmaps -l managed-by=golden-path
+
+# Namespace is created
+kubectl get namespace payments-api-prod
+
+# RoleBinding and ResourceQuota are created
+kubectl get rolebinding,resourcequota -n payments-api-prod
 ```
 
-### Step 2: Create another service via Golden Path
-```bash
-cat <<EOF | kubectl apply -f -
-apiVersion: platform.example.com/v1alpha1
-kind: PlatformService
-metadata:
-  name: user-service
-spec:
-  team: identity
-  language: python
-  replicas: 2
-  monitoring: true
-EOF
+Expected result:
+
+```text
+NAME                  STATUS
+payments-api-prod     Active
+
+NAME                                              ROLE                AGE
+cicd-deployer-binding                             ClusterRole/edit    ...
+
+NAME             AGE
+default-quota    ...
 ```
 
-### Step 3: Observe the generated resources
-```bash
-kubectl get all -l managed-by=golden-path
-```
-
-## ✅ Verification
-
-| Check | Command | Expected |
-|-------|---------|----------|
-| CRD registered | `kubectl get crds \| grep platformservice` | CRD present |
-| CR created | `kubectl get platformservices` | Resources listed |
-| Resources provisioned | `kubectl get deploy,svc` | Auto-created resources |
-| Controller logs | Check controller stdout | Reconciliation messages |
+## Cleanup
 
 ```bash
-# Cleanup
 kind delete cluster --name golden-path
 ```
 
-## 👨‍💻 Author
+## Documentation
 
-**Sumit Dalavi** — Senior DevSecOps / Platform Engineer
+- [Architecture](docs/ARCHITECTURE.md)
+- [Runbook](docs/runbook.md)
+- [Decisions](docs/decisions.md)
+- [Changelog](docs/changelog.md)
+
+## Author
+
+**Sumit Dalavi** — Senior Platform / DevSecOps Engineer  
 [GitHub](https://github.com/SumitDalavi) | [LinkedIn](https://in.linkedin.com/in/sumit-dalavi-762838129)
 
 ---
 
-*Built with a focus on robust patterns, not toy demos.*
-
-## CI & Reliability Updates (August 2026)
-
-- **CI Pipeline Remediation:** Successfully resolved all CI/CD pipeline failures and established baseline CI workflows.
-- **Specific Fix:** Added and configured robust GitHub Actions workflows for automated testing, linting, and formatting.
-- **Status:** 🟩 Passing
+Built to demonstrate continuous reconciliation patterns with an honest, testable scope.
