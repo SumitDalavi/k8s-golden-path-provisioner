@@ -1,10 +1,10 @@
 # Runbook — k8s-golden-path-provisioner
-> Last updated: 2026-08-29
+> Last updated: 2026-10-18
 
 ## Prerequisites
 | Tool | Required Version | How to check |
 |---|---|---|
-| Go | >= 1.21 | `go version` |
+| Go | >= 1.26 | `go version` |
 | kubectl | >= 1.28 | `kubectl version --client` |
 | kind | Latest | `kind version` |
 | Docker | >= 24.x | `docker version` |
@@ -15,7 +15,7 @@
 kind create cluster --name golden-path
 
 # Apply CRD
-kubectl apply -f api/v1alpha1/
+kubectl apply -f config/crd/platformservice.yaml
 
 # Run operator
 go run . &
@@ -27,14 +27,14 @@ go run . &
 go test ./... -v
 
 # E2E Tests
-bash e2e/run_tests.sh
+bash e2e/test_provisioner_e2e.sh
 ```
 
 Expected output:
 ```
-?       github.com/SumitDalavi/k8s-golden-path-provisioner      [no test files]
 ok      github.com/SumitDalavi/k8s-golden-path-provisioner/api/v1alpha1 0.011s
-ok      github.com/SumitDalavi/k8s-golden-path-provisioner/controllers  0.252s
+ok      github.com/SumitDalavi/k8s-golden-path-provisioner/webhook     0.011s
+ok      github.com/SumitDalavi/k8s-golden-path-provisioner/tests       0.012s
 ```
 
 ## Environment Variables
@@ -47,4 +47,48 @@ ok      github.com/SumitDalavi/k8s-golden-path-provisioner/controllers  0.252s
 | Symptom | Cause | Fix |
 |---|---|---|
 | `connection refused` on `go run .` | KUBECONFIG not set or cluster not running | Ensure `kind` cluster is active |
-| `no matches for kind "PlatformService"` | CRD not applied | Run `kubectl apply -f api/v1alpha1/` |
+| `no matches for kind "PlatformService"` | CRD not applied | Run `kubectl apply -f config/crd/platformservice.yaml` |
+
+## Release Runbook
+
+### Triggering a New Release
+Releases are automated via GitHub Actions (`.github/workflows/release.yml`) and trigger whenever a semantic version tag is pushed:
+
+```bash
+# 1. Ensure master is clean and up-to-date
+git checkout master
+git pull origin master
+
+# 2. Tag the release
+git tag -a v0.1.0 -m "Release v0.1.0"
+
+# 3. Push the tag to trigger the pipeline
+git push origin v0.1.0
+```
+
+### Release Pipeline Stages
+1. **Test Verification:** Runs `go test ./...` across all packages.
+2. **Container Image Build:** Builds the minimal operator image (`ghcr.io/sumitdalavi/k8s-golden-path-provisioner:<tag>`).
+3. **Trivy Vulnerability Scan:** Scans the built container for CRITICAL and HIGH CVEs.
+4. **Anchore Syft SBOM Generation:** Creates an SPDX JSON Software Bill of Materials (`sbom.spdx.json`).
+5. **GitHub Release Publishing:** Creates the release with auto-generated release notes and attaches `sbom.spdx.json`.
+
+### Verifying the Release
+```bash
+# Check workflow run status
+gh run list --workflow=release.yml
+
+# Inspect the published release and attached assets
+gh release view v0.1.0
+
+# Download and inspect the SBOM
+gh release download v0.1.0 -p "sbom.spdx.json"
+cat sbom.spdx.json | jq .spdxVersion
+```
+
+### Release Failure Modes
+| Symptom | Cause | Resolution |
+|---|---|---|
+| `Unable to resolve action ... unable to find version` | Pinned action tag missing or upstream tag modified | Pin action to a verified release tag or commit SHA |
+| `invalid reference format: repository name must be lowercase` | Container repository owner contains uppercase characters | Lowercase the repository owner before tagging |
+| `File not found: sbom.spdx.json` during release step | SBOM action configured with `artifact-name` instead of `output-file` | Ensure `output-file: sbom.spdx.json` is set in Anchore action |

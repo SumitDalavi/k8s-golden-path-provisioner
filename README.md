@@ -1,6 +1,8 @@
 # Self-Service Kubernetes "Golden Path" Operator
 
 [![CI Pipeline](https://github.com/SumitDalavi/k8s-golden-path-provisioner/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/SumitDalavi/k8s-golden-path-provisioner/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/SumitDalavi/k8s-golden-path-provisioner)](https://github.com/SumitDalavi/k8s-golden-path-provisioner/releases)
+[![Release Workflow](https://github.com/SumitDalavi/k8s-golden-path-provisioner/actions/workflows/release.yml/badge.svg)](https://github.com/SumitDalavi/k8s-golden-path-provisioner/actions/workflows/release.yml)
 
 > **Maturity:** Full Prototype  
 > A Kubernetes operator that provisions a baseline namespace, RBAC binding, and resource quota from a `PlatformService` CRD.
@@ -79,7 +81,7 @@ README.md
 
 | Tool | Version | Purpose |
 |---|---|---|
-| Go | >= 1.21 | Build and run the operator |
+| Go | >= 1.26 | Build and run the operator |
 | kubectl | >= 1.28 | Kubernetes CLI |
 | kind or minikube | Latest | Local Kubernetes cluster |
 | Docker | >= 24.x | Container runtime |
@@ -145,6 +147,15 @@ default-quota    ...
 ```bash
 kind delete cluster --name golden-path
 ```
+
+## Release & Security Verification
+
+Every tagged release (`v*.*.*`) triggers an automated DevSecOps release workflow:
+1. **Automated Testing:** Runs `go test ./...` unit tests.
+2. **Container Image Build:** Builds the minimal distroless operator image (`ghcr.io/sumitdalavi/k8s-golden-path-provisioner:<tag>`).
+3. **Vulnerability Scanning:** Scans the operator container image using [Aqua Security Trivy](https://github.com/aquasecurity/trivy-action) for `HIGH` and `CRITICAL` CVEs.
+4. **SBOM Generation:** Generates a Software Bill of Materials (SBOM) in SPDX JSON format (`sbom.spdx.json`) using [Anchore Syft](https://github.com/anchore/sbom-action).
+5. **GitHub Release Publishing:** Packages release notes and attaches `sbom.spdx.json` as a verifiable supply-chain asset.
 
 ## Documentation
 
