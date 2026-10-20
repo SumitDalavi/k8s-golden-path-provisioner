@@ -157,6 +157,31 @@ Every tagged release (`v*.*.*`) triggers an automated DevSecOps release workflow
 4. **SBOM Generation:** Generates a Software Bill of Materials (SBOM) in SPDX JSON format (`sbom.spdx.json`) using [Anchore Syft](https://github.com/anchore/sbom-action).
 5. **GitHub Release Publishing:** Packages release notes and attaches `sbom.spdx.json` as a verifiable supply-chain asset.
 
+## 🚀 Progressive Credential Loading & Execution Tiers
+
+This project implements **Progressive Credential Loading (PCL)**, allowing it to run immediately out-of-the-box without external dependencies while seamlessly upgrading as credentials are provided.
+
+### Tier 1: Zero-Config Mock Mode (Default)
+Ideal for CI, testing, and rapid local evaluation.
+- **Execution:** Run with default configuration (`cp .env.example .env`). Zero API keys, databases, or cloud credentials required.
+- **Fallback Behavior:** In-memory caches, deterministic offline heuristics, mock vector embeddings, and local mock storage are automatically used.
+- **Health Verification:** Endpoints report `{"mode": "mock"}` for unconfigured dependencies.
+
+### Tier 2: Local Development with Live Services
+Connect specific external services while keeping others mocked.
+- **Execution:** Provide credentials in `.env` for the services you want active (e.g., `KUBECONFIG`).
+- **Progressive Upgrade:** The runtime inspects environment variables on boot and dynamically promotes only configured modules to live mode.
+- **Safe Fallback:** Any missing credentials automatically remain on mock fallbacks with no crashes or missing service errors.
+
+### Tier 3: Production Hardened
+Enterprise deployment with production-grade backends, security scans, and container distributions.
+- **Helm OCI Chart:** Deploy directly via Helm without adding a chart repository:
+  ```bash
+  helm install k8s-golden-path-provisioner oci://ghcr.io/sumitdalavi/k8s-golden-path-provisioner --version 0.2.0
+  ```
+- **Kubernetes:** Injects secrets directly via Helm values or External Secrets Operator.
+- **Release Verification:** Signed artifacts, checksums, and SPDX SBOM available on [GitHub Releases](https://github.com/SumitDalavi/k8s-golden-path-provisioner/releases).
+
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md)
