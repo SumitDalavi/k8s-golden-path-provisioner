@@ -10,7 +10,7 @@ metadata:
   name: golden-path-manager
 rules:
 - apiGroups: ["platform.example.com"]
-  resources: ["goldenpaths", "goldenpaths/status", "goldenpaths/finalizers"]
+  resources: ["goldenpaths", "goldenpaths/status", "goldenpaths/finalizers", "platformservices", "platformservices/status", "platformservices/finalizers"]
   verbs: ["get", "list", "watch", "update", "patch", "status"]
 - apiGroups: [""]
   resources: ["namespaces", "resourcequotas", "events"]
