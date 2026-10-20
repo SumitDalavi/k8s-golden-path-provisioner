@@ -1,8 +1,13 @@
 # Self-Service Kubernetes "Golden Path" Operator
 
 [![CI Pipeline](https://github.com/SumitDalavi/k8s-golden-path-provisioner/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/SumitDalavi/k8s-golden-path-provisioner/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/SumitDalavi/k8s-golden-path-provisioner)](https://github.com/SumitDalavi/k8s-golden-path-provisioner/releases)
+[![Release](https://img.shields.io/github/v/release/SumitDalavi/k8s-golden-path-provisioner?color=0969da&label=release&logo=github)](https://github.com/SumitDalavi/k8s-golden-path-provisioner/releases)
 [![Release Workflow](https://github.com/SumitDalavi/k8s-golden-path-provisioner/actions/workflows/release.yml/badge.svg)](https://github.com/SumitDalavi/k8s-golden-path-provisioner/actions/workflows/release.yml)
+[![GHCR Container](https://img.shields.io/badge/ghcr.io-v0.2.0-blue?logo=docker&logoColor=white)](https://github.com/SumitDalavi/k8s-golden-path-provisioner/pkgs/container/k8s-golden-path-provisioner)
+[![Helm OCI](https://img.shields.io/badge/helm%20chart-0.2.0-0f1689?logo=helm&logoColor=white)](https://github.com/SumitDalavi/k8s-golden-path-provisioner/pkgs/container/k8s-golden-path-provisioner)
+[![Go](https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go&logoColor=white)](https://golang.org)
+[![SBOM](https://img.shields.io/badge/SBOM-SPDX%202.3-blueviolet?logo=spdx)](https://github.com/SumitDalavi/k8s-golden-path-provisioner/releases/tag/v0.2.0)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 > **Maturity:** Full Prototype  
 > A Kubernetes operator that provisions a baseline namespace, RBAC binding, and resource quota from a `PlatformService` CRD.
