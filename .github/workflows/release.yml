@@ -40,6 +40,37 @@ jobs:
           exit-code: "0"
           severity: CRITICAL,HIGH
 
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Container Image to GHCR
+        run: |
+          docker push "${{ env.IMAGE }}"
+          if [[ "${{ github.ref_name }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+            REPO="${{ github.event.repository.name }}"
+            LATEST="ghcr.io/${OWNER}/${REPO}:latest"
+            docker tag "${{ env.IMAGE }}" "$LATEST"
+            docker push "$LATEST"
+          fi
+
+      - name: Push Helm Chart to GHCR OCI
+        run: |
+          REPO="${{ github.event.repository.name }}"
+          VER="${{ github.ref_name }}"
+          SEMVER="${VER#v}"
+
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io \
+            --username ${{ github.actor }} --password-stdin
+
+          helm package ./helm --version "${SEMVER}" --app-version "${VER}"
+          helm push "${REPO}-${SEMVER}.tgz" "oci://ghcr.io/${{ github.repository_owner }}"
+          echo "✅ Helm: oci://ghcr.io/${{ github.repository_owner }}/${REPO}:${SEMVER}"
+
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
         with:
