@@ -9,7 +9,6 @@
 [![SBOM](https://img.shields.io/badge/SBOM-SPDX%202.3-blueviolet?logo=spdx)](https://github.com/SumitDalavi/k8s-golden-path-provisioner/releases/tag/v0.2.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-> **Maturity:** Full Prototype  
 > A Kubernetes operator that provisions a baseline namespace, RBAC binding, and resource quota from a `PlatformService` CRD.
 
 ## The problem
