@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: k8s-golden-path-provisioner-helm-staging
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: platform-engineering
+    environment: staging
+    packaging: helm-oci
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: oci://ghcr.io/sumitdalavi
+    chart: k8s-golden-path-provisioner
+    targetRevision: "0.2.0"
+    helm:
+      releaseName: k8s-golden-path-provisioner
+      values: |
+        replicaCount: 2
+        image:
+          repository: ghcr.io/sumitdalavi/k8s-golden-path-provisioner
+          tag: v0.2.0
+          pullPolicy: IfNotPresent
+  destination:
+    server: https://staging-k8s.internal.net:6443
+    namespace: golden-path-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 1m

@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: k8s-golden-path-provisioner-dev
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: platform-engineering
+    environment: dev
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/SumitDalavi/k8s-golden-path-provisioner.git
+    targetRevision: master
+    path: deploy/k8s/overlays/dev
+    kustomize:
+      images:
+        - name: ghcr.io/sumitdalavi/k8s-golden-path-provisioner
+          newTag: v0.2.0
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: golden-path-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 1m
